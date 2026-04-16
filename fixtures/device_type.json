@@ -1,0 +1,17 @@
+[
+  {
+    "doctype": "Device Type",
+    "device_type": "Smartphone",
+    "description": "Smartphone"
+  },
+  {
+    "doctype": "Device Type",
+    "device_type": "Laptop",
+    "description": "Laptop"
+  },
+  {
+    "doctype": "Device Type",
+    "device_type": "Tablet",
+    "description": "Tablet"
+  }
+]

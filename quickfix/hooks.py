@@ -5,6 +5,10 @@ app_description = "QuickFix Service Centre"
 app_email = "sa.tarunkumar31@gmail.com"
 app_license = "mit"
 
+fixtures = ["Device Type", "Role", "DocPerm"]
+
+roles = [{"role": "QF Service Staff"}, {"role": "QF Technician"}, {"role": "QF Manager"}]
+
 # Apps
 # ------------------
 
@@ -117,13 +121,13 @@ app_license = "mit"
 # -----------
 # Permissions evaluated in scripted ways
 
-# permission_query_conditions = {
-# 	"Event": "frappe.desk.doctype.event.event.get_permission_query_conditions",
-# }
-#
-# has_permission = {
-# 	"Event": "frappe.desk.doctype.event.event.has_permission",
-# }
+permission_query_conditions = {
+	"Job Card": "quickfix.api.get_job_card_permission_query_conditions",
+}
+
+has_permission = {
+	"Service Invoice": "quickfix.api.has_service_invoice_permission",
+}
 
 # DocType Class
 # ---------------
@@ -246,4 +250,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-
