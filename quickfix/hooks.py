@@ -136,6 +136,9 @@ has_permission = {
 # override_doctype_class = {
 # 	"ToDo": "custom_app.overrides.CustomToDo"
 # }
+override_doctype_class = {
+	"Job Card": "quickfix.overrides.custom_job_card.CustomJobCard",
+}
 
 # Document Events
 # ---------------
