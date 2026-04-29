@@ -2,7 +2,7 @@
  "add_total_row": 0,
  "add_translate_data": 0,
  "columns": [],
- "creation": "2026-04-27 18:30:00.000000",
+ "creation": "2026-04-29 11:11:41.290366",
  "disabled": 0,
  "docstatus": 0,
  "doctype": "Report",
@@ -10,14 +10,14 @@
  "idx": 0,
  "is_standard": "Yes",
  "letter_head": null,
- "modified": "2026-04-27 18:30:00.000000",
+ "modified": "2026-04-29 11:11:41.290366",
  "modified_by": "Administrator",
  "module": "Quickfix",
- "name": "Technician Performance",
+ "name": "Spare Parts Inventory",
  "owner": "Administrator",
- "prepared_report": 1,
- "ref_doctype": "Job Card",
- "report_name": "Technician Performance",
+ "prepared_report": 0,
+ "ref_doctype": "Spare Part",
+ "report_name": "Spare Parts Inventory",
  "report_type": "Script Report",
  "roles": [
   {
@@ -28,9 +28,6 @@
   },
   {
    "role": "QF Technician"
-  },
-  {
-   "role": "QF Manager"
   }
  ],
  "timeout": 0

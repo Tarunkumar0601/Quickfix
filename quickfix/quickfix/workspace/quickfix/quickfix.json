@@ -1,0 +1,103 @@
+{
+ "charts": [
+  {
+   "chart_name": "Job Cards By Status",
+   "label": "Job Cards by Status"
+  }
+ ],
+ "content": "[{\"id\":\"qf-header-overview\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>QuickFix Overview</b></span>\",\"col\":12}},{\"id\":\"9tKVNo1avM\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Job Card By Status\",\"col\":12}},{\"id\":\"qf-card-open-jobs\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Open Job Cards\",\"col\":4}},{\"id\":\"qf-card-today-revenue\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Today Delivered Revenue\",\"col\":4}},{\"id\":\"qf-chart-status\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Job Cards by Status\",\"col\":12}},{\"id\":\"qf-header-shortcuts\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\"><b>Quick Access</b></span>\",\"col\":12}},{\"id\":\"qf-shortcut-audit-log\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Audit Log\",\"col\":3}},{\"id\":\"qf-shortcut-device-type\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Device Type\",\"col\":3}},{\"id\":\"qf-shortcut-job-card\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Job Card\",\"col\":3}},{\"id\":\"qf-shortcut-part-usage-entry\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Part Usage Entry\",\"col\":3}},{\"id\":\"qf-shortcut-quickfix-settings\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"QuickFix Settings\",\"col\":3}},{\"id\":\"qf-shortcut-service-invoice\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Service Invoice\",\"col\":3}},{\"id\":\"qf-shortcut-spare-part\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Spare Part\",\"col\":3}},{\"id\":\"qf-shortcut-technician\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Technician\",\"col\":3}}]",
+ "creation": "2026-04-29 17:20:00",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 1,
+ "icon": "tool",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "QuickFix",
+ "links": [],
+ "modified": "2026-04-29 16:43:35.440540",
+ "modified_by": "Administrator",
+ "module": "Quickfix",
+ "name": "QuickFix",
+ "number_cards": [
+  {
+   "label": "Total Open Job Cards",
+   "number_card_name": "Total Open Job Cards"
+  },
+  {
+   "label": "Today Delivered Revenue",
+   "number_card_name": "Today Delivered Revenue"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "QF Service Staff"
+  },
+  {
+   "role": "QF Technician"
+  },
+  {
+   "role": "QF Manager"
+  }
+ ],
+ "sequence_id": 0.0,
+ "shortcuts": [
+  {
+   "doc_view": "List",
+   "label": "Audit Log",
+   "link_to": "Audit Log",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Device Type",
+   "link_to": "Device Type",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Job Card",
+   "link_to": "Job Card",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Part Usage Entry",
+   "link_to": "Part Usage Entry",
+   "type": "DocType"
+  },
+  {
+   "label": "QuickFix Settings",
+   "link_to": "QuickFix Settings",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Service Invoice",
+   "link_to": "Service Invoice",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Spare Part",
+   "link_to": "Spare Part",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "List",
+   "label": "Technician",
+   "link_to": "Technician",
+   "type": "DocType"
+  }
+ ],
+ "title": "QuickFix"
+}

@@ -1,6 +1,9 @@
 import datetime
+import json
+import traceback
 
 import frappe
+from frappe import _
 
 
 @frappe.whitelist()
@@ -198,3 +201,49 @@ def transfer_technician(job_card, technician):
 	doc.save(ignore_permissions=True)
 
 	return {"message": "Transferred successfully"}
+
+
+@frappe.whitelist()
+def queue_technician_performance_report(filters=None):
+	filters = json.loads(filters) if isinstance(filters, str) else (filters or {})
+	prepared = frappe.get_doc(
+		{
+			"doctype": "Prepared Report",
+			"report_name": "Technician Performance Report",
+			"filters": frappe.as_json(filters),
+			"owner": frappe.session.user,
+			"status": "Queued",
+		}
+	).insert(ignore_permissions=True)
+
+	frappe.enqueue(
+		"quickfix.api.run_technician_performance_report",
+		queue="long",
+		timeout=1200,
+		prepared_report=prepared.name,
+		filters=filters,
+	)
+
+	return {"message": _("Report queued successfully"), "prepared_report": prepared.name}
+
+
+def run_technician_performance_report(prepared_report, filters=None):
+	try:
+		pr = frappe.get_doc("Prepared Report", prepared_report)
+		pr.status = "Running"
+		pr.save(ignore_permissions=True)
+		report = frappe.get_doc("Report", "Technician Performance Report")
+		result = report.execute_script_report(filters or {})
+		pr.report_end_time = frappe.utils.now()
+		pr.status = "Completed"
+		pr.report_data = frappe.as_json(result)
+		pr.save(ignore_permissions=True)
+		frappe.db.commit()
+	except Exception:
+		frappe.db.rollback()
+		frappe.log_error(frappe.get_traceback(), "Prepared Technician Performance Report Failed")
+		pr = frappe.get_doc("Prepared Report", prepared_report)
+		pr.status = "Error"
+		pr.error_message = traceback.format_exc()
+		pr.save(ignore_permissions=True)
+		frappe.db.commit()
