@@ -1,57 +1,60 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2026-04-15 16:52:36.319131",
+ "creation": "2026-04-20 13:34:55.572847",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "shop_name",
-  "manager_email",
-  "default_labour_charge",
-  "low_stock_alert_enabled"
+  "doctype_name",
+  "document_name",
+  "action",
+  "user",
+  "timestamp"
  ],
  "fields": [
   {
-   "fieldname": "shop_name",
+   "fieldname": "doctype_name",
    "fieldtype": "Data",
-   "label": "Shop Name"
+   "label": "Doctype Name"
   },
   {
-   "fieldname": "manager_email",
+   "fieldname": "action",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Manager Email",
-   "reqd": 1
+   "label": "Action"
   },
   {
-   "default": "1",
-   "fieldname": "low_stock_alert_enabled",
-   "fieldtype": "Check",
-   "label": "Low Stock Alert Enabled"
+   "fieldname": "user",
+   "fieldtype": "Data",
+   "label": "User"
   },
   {
-   "default": "500",
-   "fieldname": "default_labour_charge",
-   "fieldtype": "Currency",
-   "label": "Default Labour Charge"
+   "fieldname": "timestamp",
+   "fieldtype": "Data",
+   "label": "Timestamp"
+  },
+  {
+   "fieldname": "document_name",
+   "fieldtype": "Data",
+   "label": "Document Name"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
- "issingle": 1,
  "links": [],
- "modified": "2026-04-27 13:42:26.377902",
+ "modified": "2026-04-21 16:44:28.032317",
  "modified_by": "Administrator",
  "module": "Quickfix",
- "name": "QuickFix Settings",
+ "name": "Audit Log",
  "owner": "Administrator",
  "permissions": [
   {
    "create": 1,
    "delete": 1,
    "email": 1,
+   "export": 1,
    "print": 1,
    "read": 1,
+   "report": 1,
    "role": "System Manager",
    "share": 1,
    "write": 1

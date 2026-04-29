@@ -62,7 +62,13 @@ def get_job_card_permission_query_conditions(user=None):
 	if not user:
 		user = frappe.session.user
 
+	if user == "Administrator":
+		return ""
+
 	user_roles = frappe.get_roles(user)
+
+	if "System Manager" in user_roles:
+		return ""
 	if "QF Technician" in user_roles:
 		return (
 			"exists (select 1 from `tabTechnician` t "
@@ -160,3 +166,35 @@ def rename_technician(old_name, new_name):
 # - References to the old document are updated to point to the target, but if the merge logic fails, data can be lost.
 # - It's risky when renaming to an existing name, as it combines records unexpectedly.
 # - Use merge=True only when intentionally merging two existing records, not for simple renames.
+
+import frappe
+from frappe.utils import now
+
+
+@frappe.whitelist()
+def custom_get_count(doctype, filters=None, debug=False, cache=False):
+	log = frappe.get_doc(
+		{
+			"doctype": "Audit Log",
+			"document_name": f"AUDIT-{frappe.generate_hash(length=8)}",
+			"doctype_name": doctype,
+			"action": "count_queried",
+			"user": frappe.session.user,
+			"timestamp": now(),
+		}
+	)
+
+	log.insert(ignore_permissions=True)
+
+	from frappe.client import get_count
+
+	return get_count(doctype, filters, debug, cache)
+
+
+@frappe.whitelist()
+def transfer_technician(job_card, technician):
+	doc = frappe.get_doc("Job Card", job_card)
+	doc.assigned_technician = technician
+	doc.save(ignore_permissions=True)
+
+	return {"message": "Transferred successfully"}

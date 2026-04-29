@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "TECH-####",
+ "autoname": "TECH-.####",
  "creation": "2026-04-15 16:29:42.938985",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -83,7 +83,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-15 16:39:31.275661",
+ "modified": "2026-04-21 16:56:39.325385",
  "modified_by": "Administrator",
  "module": "Quickfix",
  "name": "Technician",
@@ -107,17 +107,17 @@
    "role": "QF Service Staff"
   },
   {
-   "read": 1,
-   "write": 1,
    "if_owner": 1,
-   "role": "QF Technician"
+   "read": 1,
+   "role": "QF Technician",
+   "write": 1
   },
   {
    "create": 1,
-   "read": 1,
-   "write": 1,
    "delete": 1,
-   "role": "QF Manager"
+   "read": 1,
+   "role": "QF Manager",
+   "write": 1
   }
  ],
  "row_format": "Dynamic",

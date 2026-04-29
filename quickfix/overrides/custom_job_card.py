@@ -20,9 +20,10 @@ class CustomJobCard(JobCard):
 	def _check_urgent_unassigned(self):
 		if self.priority == "Urgent" and not self.assigned_technician:
 			settings = frappe.get_single("QuickFix Settings")
-			if settings.manager_email:
+			manager = getattr(settings, "manager_email", None)
+			if manager:
 				frappe.enqueue(
 					"quickfix.utils.send_urgent_alert",
 					job_card=self.name,
-					manager=settings.manager_email,
+					manager=manager,
 				)

@@ -1,0 +1,12 @@
+[
+ {
+  "default_labour_charge": 500.0,
+  "docstatus": 0,
+  "doctype": "QuickFix Settings",
+  "low_stock_alert_enabled": 1,
+  "manager_email": "Manager.shop@email.com",
+  "modified": "2026-04-20 13:47:32.515639",
+  "name": "QuickFix Settings",
+  "shop_name": "Sample Shop Name"
+ }
+]

@@ -5,7 +5,16 @@ app_description = "QuickFix Service Centre"
 app_email = "sa.tarunkumar31@gmail.com"
 app_license = "mit"
 
-fixtures = ["Device Type", "Role", "DocPerm"]
+fixtures = [
+	"Custom Field",
+	"Property Setter",
+	"Role",
+	"Workspace",
+	{"dt": "Device Type", "filters": [["name", "in", ["Mobile", "Laptop", "Tablet"]]]},
+	{"dt": "QuickFix Settings", "filters": [["name", "=", "QuickFix Setings"]]},
+]
+
+extend_bootinfo = "quickfix.boot.extend_bootinfo"
 
 roles = [{"role": "QF Service Staff"}, {"role": "QF Technician"}, {"role": "QF Manager"}]
 
@@ -30,11 +39,11 @@ roles = [{"role": "QF Service Staff"}, {"role": "QF Technician"}, {"role": "QF M
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/quickfix/css/quickfix.css"
-# app_include_js = "/assets/quickfix/js/quickfix.js"
+app_include_js = "/assets/quickfix/js/quickfix.js"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/quickfix/css/quickfix.css"
-# web_include_js = "/assets/quickfix/js/quickfix.js"
+web_include_js = "/assets/quickfix/js/quickfix_web.js"
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "quickfix/public/scss/website"
@@ -47,8 +56,8 @@ roles = [{"role": "QF Service Staff"}, {"role": "QF Technician"}, {"role": "QF M
 # page_js = {"page" : "public/js/file.js"}
 
 # include js in doctype views
-# doctype_js = {"doctype" : "public/js/doctype.js"}
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+doctype_js = {"Job Card": "public/js/job_card_custom.js"}
+doctype_list_js = {"Job Card": "public/js/job_card_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -64,9 +73,11 @@ roles = [{"role": "QF Service Staff"}, {"role": "QF Technician"}, {"role": "QF M
 # home_page = "login"
 
 # website user home page (by Role)
-# role_home_page = {
-# 	"Role": "home_page"
-# }
+website_role_rules = [{"Role": "/track-job", "to_route": "track-job"}]
+
+portal_menu_items = [
+	{"title": "Track My Job", "route": "/track-job", "reference_doctype": "Job Card", "role": "Guest"}
+]
 
 # Generators
 # ----------
@@ -78,22 +89,19 @@ roles = [{"role": "QF Service Staff"}, {"role": "QF Technician"}, {"role": "QF M
 # ----------
 
 # add methods and filters to jinja environment
-# jinja = {
-# 	"methods": "quickfix.utils.jinja_methods",
-# 	"filters": "quickfix.utils.jinja_filters"
-# }
+jinja = {"methods": "quickfix.utils.get_shop_name", "filters": "quickfix.utils.format_job_id"}
 
 # Installation
 # ------------
 
 # before_install = "quickfix.install.before_install"
-# after_install = "quickfix.install.after_install"
+after_install = "quickfix.setup.after_install"
 
 # Uninstallation
 # ------------
 
 # before_uninstall = "quickfix.uninstall.before_uninstall"
-# after_uninstall = "quickfix.uninstall.after_uninstall"
+after_uninstall = "quickfix.setup.after_uninstall"
 
 # Integration Setup
 # ------------------
@@ -140,17 +148,18 @@ override_doctype_class = {
 	"Job Card": "quickfix.overrides.custom_job_card.CustomJobCard",
 }
 
+override_whitelisted_methods = {"frappe.client.get_count": "quickfix.api.custom_get_count"}
+
 # Document Events
 # ---------------
 # Hook on document methods and events
-
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"*": {
+		"on_update": "quickfix.audit.log_change",
+		"on_submit": "quickfix.audit.log_change",
+		"on_cancel": "quickfix.audit.log_change",
+	}
+}
 
 # Scheduled Tasks
 # ---------------

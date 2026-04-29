@@ -4,14 +4,14 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.model.naming import make_autoname
 
 
 class SparePart(Document):
 	def autoname(self):
 		if self.part_code:
-			# Uppercase the part_code and append the naming series
 			prefix = self.part_code.upper()
-			series = self.get_next_naming_series("PART-.YYYY-.####")
+			series = make_autoname("PART-.YYYY-.####")
 			self.name = f"{prefix}-{series}"
 
 	def validate(self):
@@ -19,3 +19,16 @@ class SparePart(Document):
 			pass
 		else:
 			frappe.throw(_("The selling price must be greater than the unit cost"))
+
+	def on_update(self):
+		settings = frappe.get_single("QuickFix Settings")
+		if not getattr(settings, "low_stock_alert_enabled", 0):
+			return
+
+		threshold = self.reorder_level or 0
+
+		if (self.stock_qty or 0) <= threshold:
+			frappe.logger().warning(
+				f"Low stock detected for Spare Part {self.name}: "
+				f"stock_qty={(self.stock_qty or 0)}, threshold={threshold}"
+			)

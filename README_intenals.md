@@ -105,4 +105,57 @@ def on_update(self):
         self._updating_status = False
 ```
 
-This pattern allows controlled updates without recursion while maintaining hook functionality. 
+This pattern allows controlled updates without recursion while maintaining hook functionality.
+
+### Task B: Multiple validate handlers on Job Card
+
+I registered two `validate` handlers for `Job Card` in this app:
+
+- Controller handler: `quickfix.quickfix.doctype.job_card.job_card.JobCard.validate()`
+- `doc_events` handler: `quickfix.job_card_event_demo.job_card_validate_doc_event`
+
+#### Execution order
+
+Frappe runs them in this order:
+
+1. The controller method (`validate()` on the document class, including any `super()` chain from `override_doctype_class`)
+2. The `doc_events` handlers for that exact DocType
+3. The `doc_events` handlers registered under `"*"`
+
+This order comes from `Document.run_method()` and `Document.hook()` in Frappe core. `run_method()` calls the controller method first, and only if it completes does it continue into hook handlers. Inside `Document.hook()`, Frappe iterates:
+
+```python
+doc_events.get(self.doctype, {}).get(method, []) + doc_events.get("*", {}).get(method, [])
+```
+
+So specific DocType hooks are evaluated before wildcard hooks.
+
+#### What if both handlers raise `frappe.ValidationError`?
+
+Only the first one that executes gets a chance to raise.
+
+- If the controller `validate()` raises `frappe.ValidationError`, execution stops immediately and the `doc_events` validate hook does **not** run.
+- If the controller succeeds and the `doc_events` validate hook raises, the save fails at that point.
+
+So if both are coded to raise for the same save, the controller error "wins" because it runs first.
+
+#### What if `"*"` and a specific DocType handler are both registered for the same event?
+
+Yes, both run.
+
+For the same event, Frappe runs:
+
+1. the specific DocType handler
+2. the wildcard (`"*"`) handler
+
+In the test/demo for `Job Card.validate`, the observed order is:
+
+```text
+controller -> specific -> wildcard
+```
+
+That means:
+
+- the controller still runs before all `doc_events`
+- both `doc_events` hooks execute
+- the specific hook runs before the wildcard hook

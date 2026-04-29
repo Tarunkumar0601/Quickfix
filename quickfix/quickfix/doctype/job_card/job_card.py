@@ -4,9 +4,13 @@
 import frappe
 from frappe.model.document import Document
 
+# from quickfix.job_card_event_demo import controller_validate
+
 
 class JobCard(Document):
 	def validate(self):
+		# controller_validate(self)
+		self.auto_update_status()
 		self.validate_customer_phone()
 		self.validate_technician_assignment()
 		self.set_default_labour_charge()
@@ -28,7 +32,7 @@ class JobCard(Document):
 	def set_default_labour_charge(self):
 		if not self.labour_charge:
 			settings = frappe.get_single("QuickFix Settings")
-			self.labour_charge = settings.default_labour_change or 0
+			self.labour_charge = settings.default_labour_charge or 0
 
 	def calculate_totals(self):
 		parts_total = 0
@@ -52,7 +56,7 @@ class JobCard(Document):
 
 		if self.parts_used:
 			for idx, part in enumerate(self.parts_used, start=1):
-				spare_part_name = part.spare_part
+				spare_part_name = part.part
 				quantity = part.quantity or 0
 
 				stock_qty = frappe.db.get_value("Spare Part", spare_part_name, "stock_qty")
@@ -69,7 +73,7 @@ class JobCard(Document):
 	def on_submit(self):
 		if self.parts_used:
 			for part in self.parts_used:
-				spare_part_name = part.spare_part
+				spare_part_name = part.part
 				quantity = part.quantity or 0
 
 				current_stock = frappe.db.get_value("Spare Part", spare_part_name, "stock_qty") or 0
@@ -108,7 +112,7 @@ class JobCard(Document):
 
 		if self.parts_used:
 			for part in self.parts_used:
-				spare_part_name = part.spare_part
+				spare_part_name = part.part
 				quantity = part.quantity or 0
 
 				current_stock = frappe.db.get_value("Spare Part", spare_part_name, "stock_qty") or 0
@@ -130,9 +134,13 @@ class JobCard(Document):
 				"Only Job Cards with status 'Cancelled' or 'Draft' can be deleted."
 			)
 
-	def on_update(self):
-		if not getattr(self, "_updating_status", False):
-			self._updating_status = True
-			if self.status == "Draft" and self.assigned_technician:
-				self.status = "Pending Diagnosis"
-			self._updating_status = False
+	# def on_update(self):
+	# 	if not getattr(self, "_updating_status", False):
+	# 		self._updating_status = True
+	# 		if self.status == "Draft" and self.assigned_technician:
+	# 			self.status = "Pending Diagnosis"
+	# 		self._updating_status = False
+
+	def auto_update_status(self):
+		if self.status == "Draft" and self.assigned_technician:
+			self.status = "Pending Diagnosis"

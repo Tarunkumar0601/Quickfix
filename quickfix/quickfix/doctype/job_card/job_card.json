@@ -1,6 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "JC-.YYYY.-.#####",
  "creation": "2026-04-15 16:57:26.557459",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -30,6 +31,7 @@
   "payment_status",
   "delivery_date",
   "remarks",
+  "rejection_reason",
   "status",
   "section_break_5zhn",
   "amended_from"
@@ -119,11 +121,12 @@
    "label": "Diagnosis Date"
   },
   {
-   "default": "Normal",
+   "default": "Low",
    "fieldname": "priority",
    "fieldtype": "Select",
+   "in_list_view": 1,
    "label": "Priority",
-   "options": "Normal\nHigh\nUrgent"
+   "options": "Low\nMedium\nHigh\nUrgent"
   },
   {
    "fieldname": "section_break_parts",
@@ -148,14 +151,16 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
+   "fetch_from": "QuickFix Settings.default_labour_charge",
    "fieldname": "labour_charge",
    "fieldtype": "Currency",
-   "label": "Labour Charge",
-   "allow_on_submit": 1
+   "label": "Labour Charge"
   },
   {
    "fieldname": "final_amount",
    "fieldtype": "Currency",
+   "in_list_view": 1,
    "label": "Final Amount",
    "read_only": 1
   },
@@ -183,7 +188,8 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "Draft\nPending Diagnosis\nAwaiting Customer Approval\nIn Repair\nReady for Delivery\nDelivered\nCancelled"
+   "options": "Draft\nPending Diagnosis\nAwaiting Customer Approval\nIn Repair\nReady for Delivery\nDelivered\nCancelled",
+   "search_index": 1
   },
   {
    "fieldname": "section_break_5zhn",
@@ -198,16 +204,24 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fieldname": "rejection_reason",
+   "fieldtype": "Small Text",
+   "label": "Rejection Reason",
+   "mandatory_depends_on": "doc.status == \"Cancelled\"",
+   "read_only": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2026-04-15 16:57:26.557459",
+ "modified": "2026-04-27 13:09:57.817202",
  "modified_by": "Administrator",
  "module": "Quickfix",
  "name": "Job Card",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
@@ -224,27 +238,27 @@
    "write": 1
   },
   {
-   "read": 1,
-   "write": 1,
    "create": 1,
    "print": 1,
-   "role": "QF Service Staff"
+   "read": 1,
+   "role": "QF Service Staff",
+   "write": 1
   },
   {
    "read": 1,
-   "write": 1,
+   "role": "QF Technician",
    "submit": 1,
-   "role": "QF Technician"
+   "write": 1
   },
   {
-   "create": 1,
-   "read": 1,
-   "write": 1,
-   "delete": 1,
-   "submit": 1,
-   "cancel": 1,
    "amend": 1,
-   "role": "QF Manager"
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "role": "QF Manager",
+   "submit": 1,
+   "write": 1
   }
  ],
  "row_format": "Dynamic",

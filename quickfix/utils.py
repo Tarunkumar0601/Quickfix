@@ -8,3 +8,14 @@ def send_urgent_alert(job_card, manager):
 		"Please assign a technician immediately."
 	)
 	frappe.sendmail(recipients=[manager], subject=subject, message=message)
+
+
+def get_shop_name():
+	settings = frappe.get_single("QuickFix Settings")
+	return settings.shop_name or "QuickFix"
+
+
+def format_job_id(value):
+	if not value:
+		return ""
+	return f"JOB#{value}"
