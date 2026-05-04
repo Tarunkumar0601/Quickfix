@@ -71,6 +71,8 @@ class JobCard(Document):
 					)
 
 	def on_submit(self):
+		frappe.enqueue("quickfix.api.send_job_ready_email", job_card=self.name, queue="short")
+		frappe.enqueue("quickfix.reports.generate_monthly_revenue_report", queue="long", timeout=600, retry=3)
 		if self.parts_used:
 			for part in self.parts_used:
 				spare_part_name = part.part
@@ -144,3 +146,6 @@ class JobCard(Document):
 	def auto_update_status(self):
 		if self.status == "Draft" and self.assigned_technician:
 			self.status = "Pending Diagnosis"
+
+	def before_print(self, settings=None):
+		self.print_summary = f"{self.customer_name} - {self.device_brand} {self.device_model}"
