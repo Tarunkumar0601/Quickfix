@@ -83,7 +83,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-21 16:56:39.325385",
+ "modified": "2026-05-05 12:59:01.130603",
  "modified_by": "Administrator",
  "module": "Quickfix",
  "name": "Technician",
@@ -103,8 +103,11 @@
    "write": 1
   },
   {
+   "create": 1,
+   "delete": 1,
    "read": 1,
-   "role": "QF Service Staff"
+   "role": "QF Manager",
+   "write": 1
   },
   {
    "if_owner": 1,
@@ -113,11 +116,8 @@
    "write": 1
   },
   {
-   "create": 1,
-   "delete": 1,
    "read": 1,
-   "role": "QF Manager",
-   "write": 1
+   "role": "QF Service Staff"
   }
  ],
  "row_format": "Dynamic",

@@ -15,10 +15,11 @@ class SparePart(Document):
 			self.name = f"{prefix}-{series}"
 
 	def validate(self):
-		if self.selling_price > self.unit_cost:
-			pass
-		else:
-			frappe.throw(_("The selling price must be greater than the unit cost"))
+		if self.unit_cost is None or self.selling_price is None:
+			frappe.throw("Unit Cost and Selling Price are required")
+
+		if self.selling_price <= self.unit_cost:
+			frappe.throw("Selling Price must be greater than Unit Cost")
 
 	def on_update(self):
 		settings = frappe.get_single("QuickFix Settings")
