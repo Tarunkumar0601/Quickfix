@@ -1,0 +1,230 @@
+{% extends "templates/web.html" %}
+
+{% block page_content %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap');
+
+  .track-wrap {
+    max-width: 680px;
+    margin: 60px auto;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0 16px;
+  }
+
+  .track-wrap h1 {
+    font-size: 2.6rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: #0f0f0f;
+    margin-bottom: 8px;
+  }
+
+  .track-subtitle {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-bottom: 32px;
+  }
+
+  .search-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 40px;
+  }
+
+  .search-row input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    background: #fafafa;
+  }
+
+  .search-row input:focus {
+    border-color: #0f0f0f;
+    background: #fff;
+  }
+
+  .search-row button {
+    padding: 12px 24px;
+    background: #0f0f0f;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .search-row button:hover {
+    background: #333;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .results-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #9ca3af;
+  }
+
+  .badge {
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+
+  .job-card {
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    background: #fff;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .job-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  .job-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .job-id {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #111;
+  }
+
+  .status-pill {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: capitalize;
+  }
+
+  .status-open        { background: #fef9c3; color: #854d0e; }
+  .status-in-progress { background: #dbeafe; color: #1e40af; }
+  .status-completed   { background: #dcfce7; color: #166534; }
+  .status-cancelled   { background: #fee2e2; color: #991b1b; }
+  .status-default     { background: #f3f4f6; color: #374151; }
+
+  .job-meta {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .job-meta span {
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .job-meta strong {
+    color: #374151;
+    font-weight: 500;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    border: 1.5px dashed #e5e7eb;
+    border-radius: 10px;
+    color: #9ca3af;
+  }
+
+  .empty-state svg {
+    margin-bottom: 12px;
+    opacity: 0.4;
+  }
+
+  .empty-state p {
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #f3f4f6;
+    margin: 32px 0;
+  }
+</style>
+
+<div class="track-wrap">
+  <h1>Track Job</h1>
+  <p class="track-subtitle">Enter your phone number to view all repair jobs linked to your account.</p>
+
+  <form method="GET" class="search-row">
+    <input
+      type="tel"
+      name="phone"
+      value="{{ phone or '' }}"
+      placeholder="e.g. 9876543210"
+      autocomplete="tel"
+    >
+    <button type="submit">Search</button>
+  </form>
+
+  {% if phone %}
+    <hr class="divider">
+
+    <div class="results-header">
+      <span class="results-label">Results for {{ phone }}</span>
+      <span class="badge">{{ jobs|length }} job{{ 's' if jobs|length != 1 else '' }}</span>
+    </div>
+
+    {% if jobs %}
+      {% for job in jobs %}
+        {% set s = job.status | lower | replace(' ', '-') %}
+        <div class="job-card">
+          <div class="job-card-top">
+            <span class="job-id">{{ job.name }}</span>
+            <span class="status-pill status-{{ s if s in ['open','in-progress','completed','cancelled'] else 'default' }}">
+              {{ job.status }}
+            </span>
+          </div>
+          <div class="job-meta">
+            {% if job.device_brand or job.device_model %}
+              <span><strong>Device:</strong> {{ job.device_brand or '' }} {{ job.device_model or '' }}</span>
+            {% endif %}
+            <span><strong>Phone:</strong> {{ job.customer_phone }}</span>
+          </div>
+        </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="empty-state">
+        <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M9.75 9.75h.008v.008H9.75V9.75zm4.5 0h.008v.008h-.008V9.75zM12 17.25c-2.485 0-4.5-1.567-4.5-3.5H16.5c0 1.933-2.015 3.5-4.5 3.5zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p>No jobs found for <strong>{{ phone }}</strong>.</p>
+      </div>
+    {% endif %}
+  {% endif %}
+
+</div>
+{% endblock %}

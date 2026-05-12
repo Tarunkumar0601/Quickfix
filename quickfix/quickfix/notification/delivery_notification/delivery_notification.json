@@ -1,0 +1,35 @@
+{
+ "attach_files": "",
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.status == \"Ready for Delivery\" and doc.has_value_changed(\"status\")",
+ "creation": "2026-05-12 14:23:54.116651",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Job Card",
+ "enabled": 1,
+ "event": "Value Change",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "<p>Hello {{ doc.customer_name }},</p>\n\n<p>Your device repair is complete and ready for delivery.</p>\n\n<p>Job Card: {{ doc.name }} \nDevice: {{ doc.device<em>brand }} {{ doc.device<em>model }}</p>\n\n<p>Thank you,\nQuickFix Service Center</p>\n",
+ "message_type": "HTML",
+ "modified": "2026-05-12 14:42:36.218224",
+ "modified_by": "Administrator",
+ "module": "Quickfix",
+ "name": "Delivery Notification",
+ "owner": "Administrator",
+ "print_format": "Job card format",
+ "recipients": [
+  {
+   "receiver_by_document_field": "",
+   "receiver_by_role": ""
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 0,
+ "sender": "_Test Email Account 1",
+ "sender_email": "test@example.com",
+ "subject": "Your Device is Ready for Delivery",
+ "value_changed": "status"
+}

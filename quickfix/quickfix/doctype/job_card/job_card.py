@@ -4,6 +4,9 @@
 import frappe
 from frappe.model.document import Document
 
+# from frappe.utils.pdf import get_pdf
+# from frappe.www.printview import get_print_format
+
 # from quickfix.job_card_event_demo import controller_validate
 
 
@@ -108,6 +111,26 @@ class JobCard(Document):
 		frappe.enqueue(
 			"quickfix.api.send_webhook", job_card=self.name, retry_count=0, enqueque_after_commit=True
 		)
+
+		# html = frappe.get_print(
+		# 	self.doctype,
+		# 	self.name,
+		# 	print_format = "Job card format",
+		# )
+
+		# pdf = get_pdf(html)
+
+		# frappe.sendmail(
+		# 	recipients = [self.customer_email],
+		# 	subject = "Job Card Receipt",
+		# 	message = "Attached is your repair receipt",
+		# 	attachments=[
+		# 		{
+		# 			"fname": f"{self.name}.pdf"
+		# 			"fcontent": pdf,
+		# 		}
+		# 	],
+		# )
 
 	def on_cancel(self):
 		self.status = "Cancelled"
