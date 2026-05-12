@@ -16,8 +16,7 @@ def create_default_device_type():
 	for device_type_name in devices_types:
 		if not frappe.db.exists("Device Type", device_type_name):
 			doc = frappe.get_doc({"doctype": "Device Type", "device_type": device_type_name})
-			doc.insert(ignore_permission=True)
-	frappe.db.commit()
+			doc.insert()
 
 
 def create_default_settings():
@@ -30,8 +29,7 @@ def create_default_settings():
 				"low_stock_alert_enabled": 1,
 			}
 		)
-		settings.insert(ignore_permission=True)
-	frappe.db.commit()
+		settings.insert()
 
 
 def after_uninstall():

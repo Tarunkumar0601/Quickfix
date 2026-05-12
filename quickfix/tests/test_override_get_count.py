@@ -7,7 +7,6 @@ from quickfix.api import custom_get_count
 class TestOverrideGetCount(FrappeTestCase):
 	def setUp(self):
 		frappe.db.delete("Audit Log", {})
-		frappe.db.commit()
 
 	def test_override_is_called(self):
 		custom_get_count("DocType")

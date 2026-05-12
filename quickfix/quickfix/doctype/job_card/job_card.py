@@ -71,8 +71,6 @@ class JobCard(Document):
 					)
 
 	def on_submit(self):
-		frappe.enqueue("quickfix.api.send_job_ready_email", job_card=self.name, queue="short")
-		frappe.enqueue("quickfix.reports.generate_monthly_revenue_report", queue="long", timeout=600, retry=3)
 		if self.parts_used:
 			for part in self.parts_used:
 				spare_part_name = part.part
@@ -84,9 +82,7 @@ class JobCard(Document):
 				# ignore_permissions=True is acceptable here because this is a system-initiated
 				# stock deduction triggered by Job Card submission, not a direct user action.
 				# This ensures the system can update inventory without requiring explicit user permissions.
-				frappe.db.set_value(
-					"Spare Part", spare_part_name, "stock_qty", new_stock, ignore_permissions=True
-				)
+				frappe.db.set_value("Spare Part", spare_part_name, "stock_qty", new_stock)
 
 		service_invoice = frappe.get_doc(
 			{
@@ -99,15 +95,19 @@ class JobCard(Document):
 				"payment_status": "Unpaid",
 			}
 		)
-		service_invoice.insert(ignore_permissions=True)
+		service_invoice.insert()
 
 		frappe.publish_realtime(
 			"job_ready",
 			{"job_card": self.name, "customer_name": self.customer_name, "final_amount": self.final_amount},
 			user=self.owner,
 		)
-
 		frappe.enqueue("quickfix.api.send_job_ready_email", job_card=self.name, queue="short")
+		frappe.enqueue("quickfix.reports.generate_monthly_revenue_report", queue="long", timeout=600, retry=3)
+		frappe.enqueue("quickfix.api.send_job_ready_email", job_card=self.name, queue="short")
+		frappe.enqueue(
+			"quickfix.api.send_webhook", job_card=self.name, retry_count=0, enqueque_after_commit=True
+		)
 
 	def on_cancel(self):
 		self.status = "Cancelled"
@@ -120,9 +120,7 @@ class JobCard(Document):
 				current_stock = frappe.db.get_value("Spare Part", spare_part_name, "stock_qty") or 0
 				new_stock = current_stock + quantity
 
-				frappe.db.set_value(
-					"Spare Part", spare_part_name, "stock_qty", new_stock, ignore_permissions=True
-				)
+				frappe.db.set_value("Spare Part", spare_part_name, "stock_qty", new_stock)
 
 		service_invoice_name = frappe.db.get_value("Service Invoice", {"job_card": self.name}, "name")
 		if service_invoice_name:
@@ -136,12 +134,8 @@ class JobCard(Document):
 				"Only Job Cards with status 'Cancelled' or 'Draft' can be deleted."
 			)
 
-	# def on_update(self):
-	# 	if not getattr(self, "_updating_status", False):
-	# 		self._updating_status = True
-	# 		if self.status == "Draft" and self.assigned_technician:
-	# 			self.status = "Pending Diagnosis"
-	# 		self._updating_status = False
+	def on_update(self):
+		frappe.cache.delete_value("quickfix:status_chart")
 
 	def auto_update_status(self):
 		if self.status == "Draft" and self.assigned_technician:

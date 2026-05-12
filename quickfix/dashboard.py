@@ -29,6 +29,11 @@ def get_today_delivered_revenue(filters=None):
 
 @frappe.whitelist()
 def get_status_chart_data():
+	cache_key = "quickfix:status_chart"
+	cached = frappe.cache.get_value(cache_key)
+	if cached:
+		return cached
+
 	rows = frappe.db.get_all(
 		"Job Card", fields=["status", "count(name) as count"], group_by="status", order_by="status asc"
 	)
@@ -37,4 +42,22 @@ def get_status_chart_data():
 	for row in rows:
 		labels.append(row.status or "Unknown")
 		values.append(row.count)
-	return {"labels": labels, "datasets": [{"name": _("Job Count"), "values": values}], "type": "bar"}
+
+	chart_data = {
+		"labels": labels,
+		"datasets": [
+			{
+				"name": _("Job Count"),
+				"values": values,
+			}
+		],
+		"type": "bar",
+	}
+
+	frappe.cache.set_value(
+		cache_key,
+		chart_data,
+		expires_in_sec=300,
+	)
+
+	return chart_data

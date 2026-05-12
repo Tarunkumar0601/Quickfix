@@ -22,4 +22,4 @@ def log_change(doc, method=None):
 			"timestamp": now_datetime(),
 		}
 	)
-	audit_log.insert(ignore_permissions=True)
+	audit_log.insert()

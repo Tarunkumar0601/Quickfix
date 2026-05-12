@@ -8,6 +8,7 @@
   "shop_name",
   "manager_email",
   "default_labour_charge",
+  "webhook_url",
   "low_stock_alert_enabled"
  ],
  "fields": [
@@ -34,13 +35,18 @@
    "fieldname": "default_labour_charge",
    "fieldtype": "Currency",
    "label": "Default Labour Charge"
+  },
+  {
+   "fieldname": "webhook_url",
+   "fieldtype": "Data",
+   "label": "Webhook Url"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-05-05 12:59:32.495377",
+ "modified": "2026-05-11 10:22:14.117391",
  "modified_by": "Administrator",
  "module": "Quickfix",
  "name": "QuickFix Settings",

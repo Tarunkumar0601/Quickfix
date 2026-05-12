@@ -1,9 +1,13 @@
 import datetime
+import hashlib
+import hmac
 import json
 import traceback
 
 import frappe
+import requests
 from frappe import _
+from frappe.utils import now
 
 
 @frappe.whitelist()
@@ -128,9 +132,7 @@ def transfer_job(from_tech, to_tech):
             """,
 			(to_tech, from_tech),
 		)
-		frappe.db.commit()
 	except Exception as exc:
-		frappe.db.rollback()
 		frappe.log_error(exc)
 		raise
 
@@ -170,9 +172,6 @@ def rename_technician(old_name, new_name):
 # - It's risky when renaming to an existing name, as it combines records unexpectedly.
 # - Use merge=True only when intentionally merging two existing records, not for simple renames.
 
-import frappe
-from frappe.utils import now
-
 
 @frappe.whitelist()
 def custom_get_count(doctype, filters=None, debug=False, cache=False):
@@ -187,7 +186,7 @@ def custom_get_count(doctype, filters=None, debug=False, cache=False):
 		}
 	)
 
-	log.insert(ignore_permissions=True)
+	log.insert()
 
 	from frappe.client import get_count
 
@@ -198,7 +197,7 @@ def custom_get_count(doctype, filters=None, debug=False, cache=False):
 def transfer_technician(job_card, technician):
 	doc = frappe.get_doc("Job Card", job_card)
 	doc.assigned_technician = technician
-	doc.save(ignore_permissions=True)
+	doc.save()
 
 	return {"message": "Transferred successfully"}
 
@@ -214,7 +213,7 @@ def queue_technician_performance_report(filters=None):
 			"owner": frappe.session.user,
 			"status": "Queued",
 		}
-	).insert(ignore_permissions=True)
+	).insert()
 
 	frappe.enqueue(
 		"quickfix.api.run_technician_performance_report",
@@ -231,19 +230,184 @@ def run_technician_performance_report(prepared_report, filters=None):
 	try:
 		pr = frappe.get_doc("Prepared Report", prepared_report)
 		pr.status = "Running"
-		pr.save(ignore_permissions=True)
+		pr.save()
 		report = frappe.get_doc("Report", "Technician Performance Report")
 		result = report.execute_script_report(filters or {})
 		pr.report_end_time = frappe.utils.now()
 		pr.status = "Completed"
 		pr.report_data = frappe.as_json(result)
-		pr.save(ignore_permissions=True)
-		frappe.db.commit()
+		pr.save()
 	except Exception:
-		frappe.db.rollback()
 		frappe.log_error(frappe.get_traceback(), "Prepared Technician Performance Report Failed")
 		pr = frappe.get_doc("Prepared Report", prepared_report)
 		pr.status = "Error"
 		pr.error_message = traceback.format_exc()
-		pr.save(ignore_permissions=True)
-		frappe.db.commit()
+		pr.save()
+
+
+logger = frappe.logger("quickfix")
+
+
+@frappe.whitelist()
+def send_webhook(job_card_name, retry_count=0):
+	settings = frappe.get_single("QuickFix Settings")
+
+	if not settings.webhook_url:
+		return
+	doc = frappe.get_doc("Job Card", job_card_name)
+
+	raw = f"{doc.name}-job_submitted"
+	webhook_id = hashlib.sha256(raw.encode()).hexdigest()
+
+	already_sent = frappe.db.exists(
+		"Audit Log",
+		{
+			"document_name": webhook_id,
+			"action": "webhook_sent",
+		},
+	)
+
+	if already_sent:
+		logger.info(f"Skipping duplicate webhook for {doc.name}")
+		return
+
+	payload = {
+		"event": "job_submitted",
+		"job_card": doc.name,
+		"customer": doc.customer_name,
+		"amount": doc.final_amount,
+	}
+
+	try:
+		response = requests.post(
+			settings.webhook_url,
+			json=payload,
+			timeout=5,
+		)
+
+		response.raise_for_status()
+
+		frappe.get_doc(
+			{
+				"doctype": "Audit Log",
+				"doctype_name": "Job Card",
+				"document_name": "webhook_id",
+				"action": "webhook_sent",
+				"user": frappe.session.user,
+				"timestamp": now(),
+			}
+		).insert()
+
+	except Exception as e:
+		frappe.get_doc(
+			{
+				"doctype": "Audit Log",
+				"doctype_name": "Job Card",
+				"document_name": "webhook_id",
+				"action": "webhook_failed",
+				"user": frappe.session.user,
+				"timestamp": now(),
+			}
+		).insert()
+
+		frappe.log_error(
+			title="Webhook Error",
+			message=f"""
+			webhook failed for Job Card: {doc.name}
+
+			Retry Count: {retry_count}
+
+			Error:
+			{e!s}
+			""",
+		)
+
+		if retry_count < 3:
+			frappe.enqueue(
+				"quickfix.api.send_webhook",
+				job_card_name=job_card_name,
+				retry_count=retry_count + 1,
+				enqueque_after_commit=True,
+			)
+		else:
+			logger.error(f"Wbhook permanently failed for {doc.name}")
+
+
+@frappe.whitelist(allow_guest=True)
+def payment_webhook():
+	payload = frappe.request.data
+	if not payload:
+		frappe.throw("Empty Payload")
+
+	secret = frappe.conf.get("payment_webhook_secret", "")
+	signature = frappe.get_request_header("X-siganture")
+	expected_signature = hmac.new(
+		secret.encode(),
+		payload,
+		hashlib.sha256,
+	).hexdigest()
+
+	logger.info(f"RAW PAYLOAD: {payload}")
+	logger.info(f"EXPECTED: {expected_signature}")
+	logger.info(f"RECEIVED: {signature}")
+
+	if not hmac.compare_digest(expected_signature, signature or ""):
+		frappe.throw(
+			"Invalid Signature",
+			frappe.AuthenticationError,
+		)
+
+	data = json.loads(payload)
+
+	already_processed = frappe.db.exists(
+		"Audit Log",
+		{"action": "payment_received", "webhook_id": data["ref"]},
+	)
+
+	if already_processed:
+		return {
+			"status": "duplicate",
+			"message": "Already processed",
+		}
+
+	if data.get("invoice"):
+		invoice = frappe.get_doc("Service Inovice", data["invoice"])
+
+		invoice.payment_status = "Paid"
+		invoice.save()
+	if data.get("job card"):
+		frappe.db.set_value(
+			"Job Card",
+			data["job_card"],
+			"payment_status",
+			"Paid",
+		)
+
+	frappe.get_doc(
+		{
+			"doctype": "Audit Log",
+			"doctype_name": "Service Invoice",
+			"document_name": data.get("invoice") or data.get("job_card"),
+			"action": "payment_received",
+			"user": "Guest",
+			"timestamp": now(),
+		}
+	).insert()
+
+	return {
+		"status": "ok",
+		"message": "Payment processed successfully",
+	}
+
+
+@frappe.whitelist()
+def trigger_failed_job():
+	frappe.enqueue("quickfix.api.failing_background_job", queue="default")
+
+	return "Failing job queued"
+
+
+def failing_background_job():
+	logger = frappe.logger("quickfix")
+	logger.info("Starting failing background job")
+	raise Exception("Intentional background job failure for testing")
